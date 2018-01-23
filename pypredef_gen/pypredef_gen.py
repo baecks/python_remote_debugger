@@ -16,8 +16,7 @@
 #
 # Contributor(s): Campbell Barton, Witold Jaworski
 # ***** End GPL LICENSE BLOCK *****
-import rna_info
-import inspect
+
 '''
 Creates Python predefinition (*.pypredef) files for Blender API
 The *.pypredef files are useful for syntax checking and
@@ -127,8 +126,8 @@ TYPE_ABERRATIONS = {
         "list of key, value tuples": ("[(str, types.%s)]" % _BPY_STRUCT_FAKE)
 }
 
+import rna_info
 import os
-import sys
 import inspect
 import types
 import bpy
@@ -796,11 +795,9 @@ def pyclass2predef(fw, module_name, type_name, value):
             empty_class = False
             pyprop2predef(_IDENT, fw, key, descr)
 
-    #if empty_class:
-    #    write_indented_lines(_IDENT, fw, "pass", False)
-        
-    write_indented_lines(_IDENT, fw, "__bases__ = []", False) #hack for PYDEV auto-completion
-
+    if empty_class:
+        write_indented_lines(_IDENT, fw, "pass", False)
+    
     fw("\n\n")
 
 def pymodule2predef(BASEPATH, module_name, module, title):
@@ -986,8 +983,11 @@ def bpy_base2predef(ident, fw):
     fmt = ident + _IDENT + "Note that bpy.types.%s is not actually available from within blender, it only exists for the purpose of documentation.\n" + ident + "'''\n\n"
     fw(fmt % _BPY_STRUCT_FAKE)
 
-    descr_items = [(key, descr) for key, descr in sorted(bpy.types.Struct.__bases__[0].__dict__.items()) if not key.startswith("__")]
+    # Make sure not to remove the comment containing '@UndefinedVariable' after the next line.
+    # This required to make sure PYDEV does not flag a 'undefined variable' error in the editor for '__bases__'
+    descr_items = [(key, descr) for key, descr in sorted(bpy.types.Struct.__bases__[0].__dict__.items()) if not key.startswith("__")] # @UndefinedVariable
 
+    
     for key, descr in descr_items: 
         if type(descr) == MethodDescriptorType:  # GetSetDescriptorType, GetSetDescriptorType's are not documented yet
             py_descr2predef(ident, fw, descr, "bpy.types", _BPY_STRUCT_FAKE, key)

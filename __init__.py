@@ -13,6 +13,7 @@ bl_info = {
 }
 
 ADDON_FOLDER = "python_remote_debugger"
+PYDEV_VERSION = "1.1.1"
 
 import bpy.app
 import bpy.utils
@@ -26,11 +27,43 @@ from subprocess import call
 from os.path import expanduser
 import shutil
 
+def report(addon_object, tp, msg):
+    addon_object.report(tp, msg)
+    print (msg)
+
 def install_pip():
     python_path = bpy.app.binary_path_python
     get_pip_script = os.path.join(bpy.utils.user_resource('SCRIPTS', "addons"), ADDON_FOLDER, 'get-pip', 'get-pip.py')
     retval = call([python_path, get_pip_script], stdout=sys.stdout, stderr=sys.stderr)
     return retval==0
+
+def install_pydevd(addon_object):
+    try:
+        import pydevd  # @UnresolvedImport
+        report (addon_object, {'INFO'}, "PYDEVD is already installed!")
+        return
+    except:
+        # not installed
+        report (addon_object, {'INFO'}, "PYDEVD not installed!")
+        pass
+    
+    # First install PIP if needed
+    report (addon_object, {'INFO'}, "Installing PIP")
+    if not install_pip():
+        report (addon_object, {'ERROR'}, "Failed to install PIP!")
+        return False
+    
+    # install PYDEVD through PIP
+    import pip
+    report (addon_object, {'INFO'}, "Installing PYDEVD version %s" % PYDEV_VERSION)
+    try:
+        pip.main(["install", "pydevd==%s" % PYDEV_VERSION])
+    except:
+        report (addon_object, {'ERROR'}, "Failed installing PYDEVD!")
+        return False
+    
+    report (addon_object, {'INFO'}, "Successfully installed PYDEVD!")
+    return True
 
 def generate_stubs(addon_object, path):
     print ("Generating the stubs for IDE auto-completion")
@@ -42,7 +75,6 @@ def generate_stubs(addon_object, path):
     addon_object.report({'INFO'}, "IDE auto-completion files generated in %s" % (os.path.join(script_path, 'pypredef_gen')))
 
 class PRD_AddonPreferences(AddonPreferences):
-    
     # this must match the addon name, use '__package__'
     # when defining this in a submodule of a python package.
     bl_idname = __name__
@@ -80,16 +112,28 @@ class PRD_GenerateStubs(bpy.types.Operator):
 
         return {'FINISHED'}     
        
+class PRD_Install_Pydevd(bpy.types.Operator):
+    bl_idname = 'debug.install_pydevd'
+    bl_label = 'Install PYDEVD'
+    bl_description = 'Install the PYDEVD module from PyPI'
+
+    def execute(self, context):
+        install_pydevd(self)
+
+        return {'FINISHED'}          
+       
 def register():
     print('REGISTERING ...')
     bpy.utils.register_class(PRD_AddonPreferences)
     bpy.utils.register_class(PRD_GenerateStubs)
+    bpy.utils.register_class(PRD_Install_Pydevd)
     #bpy.types.TEXT_MT_toolbox.append(addon_button)
     
 
 def unregister():
     bpy.utils.unregister_class(PRD_AddonPreferences)
     bpy.utils.unregister_class(PRD_GenerateStubs)
+    bpy.utils.unregister_class(PRD_Install_Pydevd)
     #bpy.types.TEXT_MT_toolbox.remove(addon_button)
 
 if __name__ == '__main__':
