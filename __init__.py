@@ -38,40 +38,6 @@ from helpers.filesystem import get_addon_folder_name, get_blender_path, get_addo
 def report(addon_object, tp, msg):
     addon_object.report(tp, msg)
     print (msg)
-# 
-# def install_pip():
-#     python_path = bpy.app.binary_path_python
-#     get_pip_script = os.path.join(bpy.utils.user_resource('SCRIPTS', "addons"), ADDON_FOLDER, 'get-pip', 'get-pip.py')
-#     retval = call([python_path, get_pip_script], stdout=sys.stdout, stderr=sys.stderr)
-#     return retval==0
-# 
-# def install_pydevd(addon_object):
-#     try:
-#         import pydevd  # @UnresolvedImport
-#         report (addon_object, {'INFO'}, "PYDEVD is already installed!")
-#         return
-#     except:
-#         # not installed
-#         report (addon_object, {'INFO'}, "PYDEVD not installed!")
-#         pass
-#     
-#     # First install PIP if needed
-#     report (addon_object, {'INFO'}, "Installing PIP")
-#     if not install_pip():
-#         report (addon_object, {'ERROR'}, "Failed to install PIP!")
-#         return False
-#     
-#     # install PYDEVD through PIP
-#     import pip
-#     report (addon_object, {'INFO'}, "Installing PYDEVD version %s" % PYDEV_VERSION)
-#     try:
-#         pip.main(["install", "pydevd==%s" % PYDEV_VERSION])
-#     except:
-#         report (addon_object, {'ERROR'}, "Failed installing PYDEVD!")
-#         return False
-#     
-#     report (addon_object, {'INFO'}, "Successfully installed PYDEVD!")
-#     return True
 
 class PRD_AddonPreferences(AddonPreferences):
     # this must match the addon name, use '__package__'
