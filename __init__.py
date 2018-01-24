@@ -25,7 +25,7 @@ import bpy.app
 import bpy.utils
 import os.path
 from bpy.types import AddonPreferences
-from bpy.props import StringProperty
+from bpy.props import StringProperty, IntProperty
 import socket
 import importlib
 from subprocess import call
@@ -85,10 +85,19 @@ class PRD_AddonPreferences(AddonPreferences):
         subtype='FILE_PATH',
         default=os.path.abspath(home)
     )
+    
+    debugger_port = IntProperty(
+        name="Remote debugger port number",
+        description="TCP port to which the addon will try connecting for remote debugging",
+        default=5678, #default value for pydev (eclipse)
+        soft_min=1,
+        soft_max=65535
+    )
 
     def draw(self, context):
         layout = self.layout
         layout.prop(self, 'stub_folder')
+        layout.prop(self, 'debugger_port')
         
 class PRD_GenerateStubs(ReportingOperator):
     bl_idname = 'debug.generate_stubs'
@@ -132,7 +141,11 @@ class PRD_Connect_Pydevd(ReportingOperator):
     bl_description = 'Install the PYDEVD module from PyPI if needed and connect to a remote PYDEVD-based debugger'
 
     def execute(self, context):
-        debugger = RemoteDebugger(self)
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__name__].preferences
+
+        port = addon_prefs.debugger_port
+        debugger = RemoteDebugger(self, port=port)
         debugger.connect()
         #RemoteDebugger.install_pydevd(self)
 
