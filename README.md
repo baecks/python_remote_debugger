@@ -1,3 +1,7 @@
+## Installation
+
+Currently the addon is still available as pre-release only: [version 0.0.1](https://github.com/svba/python_remote_debugger/releases/download/0.0.1/python_remote_debugger-0_0_1.zip)
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/svba/python_remote_debugger/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
